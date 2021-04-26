@@ -1,7 +1,7 @@
 package br.com.library.libraryapi.api.resource;
 
 import br.com.library.libraryapi.api.dto.BookDTO;
-import br.com.library.libraryapi.api.exception.Businessexception;
+import br.com.library.libraryapi.api.exceptions.BusinessException;
 import br.com.library.libraryapi.api.exceptions.ApiErros;
 import br.com.library.libraryapi.api.model.entity.Book;
 import br.com.library.libraryapi.service.BookService;
@@ -42,9 +42,9 @@ public class BookController {
         return new ApiErros(bindingResult);
     }
 
-    @ExceptionHandler(Businessexception.class)
+    @ExceptionHandler(BusinessException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiErros handleValidationExceptions(Businessexception ex) {
+    public ApiErros handleValidationExceptions(BusinessException ex) {
         return new ApiErros(ex);
     }
 }

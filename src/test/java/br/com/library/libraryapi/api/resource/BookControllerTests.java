@@ -1,7 +1,7 @@
 package br.com.library.libraryapi.api.resource;
 
 import br.com.library.libraryapi.api.dto.BookDTO;
-import br.com.library.libraryapi.api.exception.Businessexception;
+import br.com.library.libraryapi.api.exceptions.BusinessException;
 import br.com.library.libraryapi.api.model.entity.Book;
 import br.com.library.libraryapi.service.BookService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,6 +21,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -43,7 +45,7 @@ public class BookControllerTests {
 	@DisplayName("create new book")
 	public void createBookTest() throws Exception {
 
-		BookDTO bookDTO = createNewBook();
+		BookDTO bookDTO = createNewBookDto();
 
 		Book savedBook = Book.builder().id(10L).author("Artur").title("As aventuras").isbn("001").build();
 
@@ -87,11 +89,11 @@ public class BookControllerTests {
 	@Test
 	@DisplayName("Deve lançar erro ao tentar cadastrar um livro com isbn já utilizado por outro. ")
 	public void createBookWithDuplicateIsbn() throws Exception {
-		BookDTO dto = createNewBook();
+		BookDTO dto = createNewBookDto();
 		String json = new ObjectMapper().writeValueAsString(dto);
 		String msgmErroIsbn = "Ops! Isbn já cadastrado !!!";
 		BDDMockito.given(service.save(Mockito.any(Book.class)))
-				.willThrow(new Businessexception(msgmErroIsbn));
+				.willThrow(new BusinessException(msgmErroIsbn));
 
 		MockHttpServletRequestBuilder request = MockMvcRequestBuilders
 				.post(BOOK_API)
@@ -105,8 +107,34 @@ public class BookControllerTests {
 				.andExpect(jsonPath("errors[0]").value(msgmErroIsbn));
 	}
 
-	private BookDTO createNewBook() {
+	@Test
+	@DisplayName("Deve obter um livro")
+	public void getBookDetailsTest() throws Exception{
+		//cenário ou (given)
+		long id = 1L;
+		Book book = createNewBook();
+		BDDMockito.given(service.getByid(id)).willReturn(Optional.of(book));
+
+		//execução (when)
+
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders
+				.post(BOOK_API.concat("/1"))
+				.accept(MediaType.APPLICATION_JSON);
+
+		mvc.perform(request)
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("id").value(createNewBook().getId()))
+				.andExpect(jsonPath("title").value(createNewBook().getTitle()))
+				.andExpect(jsonPath("author").value(createNewBook().getAuthor()))
+				.andExpect(jsonPath("isbn").value(createNewBook().getIsbn()));
+
+	}
+
+	private BookDTO createNewBookDto() {
 		return BookDTO.builder().author("Artur").title("As aventuras").isbn("001").build();
+	}
+	private Book createNewBook() {
+		return Book.builder().id(1L).author("Artur").title("As aventuras").isbn("001").build();
 	}
 
 }

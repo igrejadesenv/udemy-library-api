@@ -1,6 +1,6 @@
 package br.com.library.libraryapi.service;
 
-import br.com.library.libraryapi.api.exception.Businessexception;
+import br.com.library.libraryapi.api.exceptions.BusinessException;
 import br.com.library.libraryapi.api.model.entity.Book;
 import br.com.library.libraryapi.model.repository.BookRepository;
 import br.com.library.libraryapi.service.impl.BookServiceImpl;
@@ -61,7 +61,7 @@ public class BookServiceTest {
 
         //execução
         Throwable exception = Assertions.catchThrowable(() -> service.save(book));
-        assertThat(exception).isInstanceOf(Businessexception.class)
+        assertThat(exception).isInstanceOf(BusinessException.class)
                 .hasMessage(msgmErroIsbn);
         Mockito.verify(repository, Mockito.never()).save(book);
     }
